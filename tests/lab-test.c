@@ -3,6 +3,10 @@
 #include "harness/unity.h"
 #include "../src/lab.h"
 
+/**
+ * TODO: 
+ * write unit tests to ensure list works, minimum of four? 
+ */
 
 void setUp(void) {
   printf("Setting up tests...\n");

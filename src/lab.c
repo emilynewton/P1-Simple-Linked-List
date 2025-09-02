@@ -2,6 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * TODO: 
+ * Implement all functions declared in lab.h 
+ * Remove all useless junk in this file 
+ * Delete main.c, understand that this is unit test based. 
+ * Code annotations, try try try to think through it and not go to AI!!! 
+ */
+
 int add(int a, int b) {
     return a + b;
 }

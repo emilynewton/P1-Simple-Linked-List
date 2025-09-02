@@ -1,5 +1,7 @@
 # Makefile Project Template
 
+TODO: UPDATE ME! 
+
 This is a simple Makefile project template that can be used to build, test, and
 debug C projects. It includes support for debug builds, sanitizers, and code
 coverage.
