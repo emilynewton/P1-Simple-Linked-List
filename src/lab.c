@@ -3,18 +3,18 @@
 #include <stdlib.h>
 
 /**
- * TODO: 
- * Implement all functions declared in lab.h 
- * Remove all useless junk in this file 
- * Delete main.c, understand that this is unit test based. 
- * Code annotations, try try try to think through it and not go to AI!!! 
+ * Represents a circular list with a sentinel node. 
+ * AI Use: No AI 
  */
-
 struct List { 
   struct Node* head; // sentinel node 
   int size; // size of linked list 
 };
 
+/**
+ * Represents a node in the circular linked list. 
+ * AI Use: No AI
+ */
 typedef struct Node {
   int data; 
 
@@ -25,6 +25,10 @@ typedef struct Node {
   struct Node* prev; 
 } Node;
 
+/**
+ * Creates a new circular linked list with a sentinel node. 
+ * AI Use: Assisted by AI
+ */
 List *list_create(ListType type) {
   if (type != LIST_LINKED_SENTINEL) {
     return NULL; 
@@ -50,6 +54,10 @@ List *list_create(ListType type) {
   return list; 
 }
 
+/**
+ * Destroys the circular linked list and frees all associated memory.
+ * AI Use: Assisted by AI
+ */
 void *list_destroy(List *list, FreeFunc free_func) {
   if (!list->head) {
     return; 
@@ -68,6 +76,10 @@ void *list_destroy(List *list, FreeFunc free_func) {
   free(list);
 }
 
+/**
+ * Appends a new node with the given data to the end of the circular linked list.
+ * AI Use: No AI 
+ */
 bool list_append(List *list, void *data) {
   if (!list || !data) {
     return false; 
@@ -84,6 +96,10 @@ bool list_append(List *list, void *data) {
   return true; 
 }
 
+/**
+ * Inserts a new node with the given data at the specified index in the circular linked list.
+ * AI Use: No AI 
+ */
 bool list_insert(List *list, size_t index, void *data) {
   if (!list || !data || index > list->size) { 
     return false; 
@@ -106,6 +122,10 @@ bool list_insert(List *list, size_t index, void *data) {
   return true;
 }
 
+/**
+ * Removes the node at the specified index from the circular linked list and returns its data.
+ * AI Use: No AI 
+ */
 void *list_remove(List *list, size_t index) {
   if (!list || index > list->size) {
     return NULL; 
@@ -135,6 +155,10 @@ void *list_get(const List *list, size_t index) {
   return curr->data;
 }
 
+/**
+ * Returns the number of elements in the circular linked list.
+ * AI Use: No AI
+ */
 size_t list_size(const List *list) {
   if (!list) {
     return 0; 
@@ -142,6 +166,10 @@ size_t list_size(const List *list) {
   return list->size;
 }
 
+/**
+ * Checks if the circular linked list is empty.
+ * AI Use: No AI
+ */
 bool list_is_empty(const List *list) {
   if (!list) {
     return true; 
