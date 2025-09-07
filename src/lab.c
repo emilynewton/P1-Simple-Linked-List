@@ -16,7 +16,7 @@ struct List {
  * AI Use: No AI
  */
 typedef struct Node {
-  int data; 
+  void *data; 
 
   // pointer to next node in list 
   struct Node* next; 
@@ -48,6 +48,7 @@ List *list_create(ListType type) {
 
   sentinel->data = 0; 
   sentinel->next = sentinel; // circular
+  sentinel->prev = sentinel; // circular
   list->head = sentinel; 
   list->size = 0; 
 
@@ -58,21 +59,18 @@ List *list_create(ListType type) {
  * Destroys the circular linked list and frees all associated memory.
  * AI Use: Assisted by AI
  */
-void *list_destroy(List *list, FreeFunc free_func) {
-  if (!list->head) {
-    return; 
-  }
+void list_destroy(List *list, FreeFunc free_func) {
+  Node *curr = list->head->next;
 
-  Node *curr = list->head;
-  Node *next;
-
-  while (curr) {
-    next = curr->next;
-    free_func(curr->data);
-    free(curr);
+  while (curr != list->head) {
+    Node *next = curr->next;
+    if (free_func != NULL && curr->data != NULL) {
+      free_func(curr->data);
+      free(curr); 
+    }
     curr = next;
   }
-
+  free(list->head);
   free(list);
 }
 
@@ -98,7 +96,7 @@ bool list_append(List *list, void *data) {
 
 /**
  * Inserts a new node with the given data at the specified index in the circular linked list.
- * AI Use: No AI 
+ * AI Use: Assisted by AI 
  */
 bool list_insert(List *list, size_t index, void *data) {
   if (!list || !data || index > list->size) { 
@@ -109,15 +107,16 @@ bool list_insert(List *list, size_t index, void *data) {
 
   new->data = data; 
 
-  Node *curr = list->head->next; // node right after sentinel 
+  Node *curr = list->head;
+
   for (size_t i = 0; i < index; i++) {
     curr = curr->next; 
   }
 
-  new->next = curr;
-  new->prev = curr->prev;
-  curr->prev->next = new;
-  curr->prev = new; 
+  new->next = curr->next;
+  new->prev = curr;
+  curr->next->prev = new;
+  curr->next = new;
   list->size++;
   return true;
 }
@@ -127,23 +126,32 @@ bool list_insert(List *list, size_t index, void *data) {
  * AI Use: No AI 
  */
 void *list_remove(List *list, size_t index) {
-  if (!list || index > list->size) {
+  if (!list || index >= list->size) {
     return NULL; 
   }
 
   Node *curr = list->head->next; 
   for (size_t i = 0; i < index; i++) {
+    if (!curr) return NULL;
     curr = curr->next; 
   }
 
+  if (!curr) return NULL;
+  
   curr->prev->next = curr->next; 
   curr->next->prev = curr->prev;
+  void *data = curr->data;
+  free(curr);
   list->size--;
-  return true; 
+  return data;
 }
 
+/**
+ * Retrieves the data at the specified index in the circular linked list.
+ * AI Use: No AI 
+ */
 void *list_get(const List *list, size_t index) {
-  if (!list || index > list->size) {
+  if (!list || index >= list->size) {
     return NULL; 
   }
 
@@ -151,8 +159,7 @@ void *list_get(const List *list, size_t index) {
   for (size_t i = 0; i < index; i++) {
     curr = curr->next; 
   }
-
-  return curr->data;
+  return curr->data; 
 }
 
 /**
