@@ -66,8 +66,8 @@ void list_destroy(List *list, FreeFunc free_func) {
     Node *next = curr->next;
     if (free_func != NULL && curr->data != NULL) {
       free_func(curr->data);
-      free(curr); 
     }
+    free(curr);
     curr = next;
   }
   free(list->head);
