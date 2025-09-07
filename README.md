@@ -1,4 +1,4 @@
-# Project X - My Cool Project Name
+# Project 1 - Simple Linked List 
 
 - Name: Emily Newton
 - Email: emilynewton@u.boisestate.edu
