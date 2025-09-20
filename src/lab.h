@@ -26,6 +26,13 @@ typedef enum {
  */
 typedef void (*FreeFunc)(void *);
 
+/**
+ * @typedef Compare 
+ * @brief. Function pointer type for comparing two elements in a list. If a < b, 
+ * a negative integer is returned and vice versa. 
+ */
+typedef int (*Compare)(const void *a, const void *b); 
+
 
 /**
  * @brief Create a new list of the specified type.
@@ -87,5 +94,42 @@ size_t list_size(const List *list);
  * @return true if the list is empty, false otherwise.
  */
 bool list_is_empty(const List *list);
+
+/**
+ * @brief Sorts the list. 
+ * @param list Pointer to the list.
+ * @param start Starting index of the list. 
+ * @param end Ending index of the list. 
+ * @param cmp Pointer to the Compare function. 
+ */
+void sort(const List *list, size_t start, size_t end, Compare cmp);
+
+/**
+ * @brief Merges two lists.
+ * @param list1 Pointer to the first list. 
+ * @param list2 Pointer to the second list. 
+ * @param cmp Pointer to the Compare function.
+ */
+void merge(const List *list1, const List *list2, Compare cmp); 
+
+/**
+ * @brief Sorts integers in descending order.
+ * @param a Integer to be compared. 
+ * @param b Integer to be compared. 
+ */
+int compare_int(const void *a, const void *b); 
+
+/**
+ * @brief Sorts strings in lexicographical order.
+ * @param a String to be compared. 
+ * @param b String to be compared. 
+ */
+int compare_str(const void *a, const void *b); 
+
+/**
+ * @brief Returns if the list is sorted or not.
+ * @return true is the list is sorted, false otherwise. 
+ */
+void is_sorted(); 
 
 #endif // LAB_H
