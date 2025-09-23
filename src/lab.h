@@ -31,7 +31,7 @@ typedef void (*FreeFunc)(void *);
  * @brief. Function pointer type for comparing two elements in a list. If a < b, 
  * a negative integer is returned and vice versa. 
  */
-typedef int (*Compare)(const void *a, const void *b); 
+typedef int (*Compare)(void*, void*); 
 
 
 /**
@@ -117,19 +117,19 @@ void merge(const List *list1, const List *list2, Compare cmp);
  * @param a Integer to be compared. 
  * @param b Integer to be compared. 
  */
-int compare_int(const void *a, const void *b); 
+int compare_int(void *a, void *b); 
 
 /**
  * @brief Sorts strings in lexicographical order.
  * @param a String to be compared. 
  * @param b String to be compared. 
  */
-int compare_str(const void *a, const void *b); 
+int compare_str(void *a, void *b); 
 
 /**
  * @brief Returns if the list is sorted or not.
  * @return true is the list is sorted, false otherwise. 
  */
-void is_sorted(); 
+bool is_sorted(List* list, Compare cmp); 
 
 #endif // LAB_H
