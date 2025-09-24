@@ -31,7 +31,7 @@ typedef void (*FreeFunc)(void *);
  * @brief. Function pointer type for comparing two elements in a list. If a < b, 
  * a negative integer is returned and vice versa. 
  */
-typedef int (*Compare)(void*, void*); 
+typedef int (*Compare)(void* a, void* b); 
 
 
 /**

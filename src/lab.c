@@ -25,6 +25,10 @@ typedef struct Node {
   struct Node* prev; 
 } Node;
 
+// typedef int Compare {
+
+// }
+
 /**
  * Creates a new circular linked list with a sentinel node. 
  * AI Use: Assisted by AI
@@ -182,5 +186,45 @@ bool list_is_empty(const List *list) {
   }
   return list->size == 0;
 }
+
+void sort(List *list, size_t start, size_t end, Compare cmp) {
+  for (size_t i = start + 1; i < end; ++i) {
+    void* key = list_get(list, i);
+    size_t j = i;
+
+    while (j > start && cmp(list_get(list, j - 1), key) > 0) {
+      Node *curr = list->head->next;
+      for (size_t k = 0; k < j; ++k) {
+        curr = curr->next;
+      }
+      Node *prev = curr->prev;
+      curr->data = prev->data;
+      j--;
+  }
+  Node *curr = list->head->next; 
+  for (size_t k = 0; k < j; ++k) {
+    curr = curr->next;
+  }
+  curr->data = key;
+  }
+}
+
+void merge(const List *list1, const List *list2, Compare cmp) {
+
+}
+
+int compare_int(void *a, void *b) {
+  return (*(int*)a - *(int*)b);
+}
+
+int compare_str(void *a, void *b) {
+  return strcmp(a, b); 
+}
+
+bool is_sorted(List* list, Compare cmp) {
+
+}
+
+
 
 
