@@ -102,7 +102,7 @@ bool list_is_empty(const List *list);
  * @param end Ending index of the list. 
  * @param cmp Pointer to the Compare function. 
  */
-void sort(const List *list, size_t start, size_t end, Compare cmp);
+void sort(List *list, size_t start, size_t end, Compare cmp);
 
 /**
  * @brief Merges two lists.
@@ -110,7 +110,7 @@ void sort(const List *list, size_t start, size_t end, Compare cmp);
  * @param list2 Pointer to the second list. 
  * @param cmp Pointer to the Compare function.
  */
-void merge(const List *list1, const List *list2, Compare cmp); 
+List* merge(List *list1, List *list2, Compare cmp);
 
 /**
  * @brief Sorts integers in descending order.

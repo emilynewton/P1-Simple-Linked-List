@@ -1,6 +1,7 @@
 #include "lab.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * Represents a circular list with a sentinel node. 
@@ -8,7 +9,7 @@
  */
 struct List { 
   struct Node* head; // sentinel node 
-  int size; // size of linked list 
+  size_t size; // size of linked list 
 };
 
 /**
@@ -188,29 +189,89 @@ bool list_is_empty(const List *list) {
 }
 
 void sort(List *list, size_t start, size_t end, Compare cmp) {
-  for (size_t i = start + 1; i < end; ++i) {
-    void* key = list_get(list, i);
-    size_t j = i;
+    // starting in second position, assuming first is sorted 
+    for (size_t i = start + 1; i < end; ++i) {
+        // current element being sorted 
+        void *key = list_get(list, i);
+        size_t j = i;
 
-    while (j > start && cmp(list_get(list, j - 1), key) > 0) {
-      Node *curr = list->head->next;
-      for (size_t k = 0; k < j; ++k) {
-        curr = curr->next;
-      }
-      Node *prev = curr->prev;
-      curr->data = prev->data;
-      j--;
-  }
-  Node *curr = list->head->next; 
-  for (size_t k = 0; k < j; ++k) {
-    curr = curr->next;
-  }
-  curr->data = key;
-  }
+        while (j > start && cmp(list_get(list, j - 1), key) < 0) {
+            Node *curr = list->head->next;
+            for (size_t k = 0; k < j; ++k) {
+                curr = curr->next;
+            }
+            Node *prev = list->head->next; 
+            for (size_t k = 0; k < j - 1; ++k) {
+                prev = prev->next;
+            }
+            curr->data = prev->data;
+            j--;
+        }
+        // place key in correct position 
+        Node *val = list->head->next;
+        for (size_t k = 0; k < j; ++k) {
+            val = val->next;
+        }
+        val->data = key;
+    }
 }
 
-void merge(const List *list1, const List *list2, Compare cmp) {
+List* merge(List *list1, List *list2, Compare cmp) {
+  List *merged = list_create(LIST_LINKED_SENTINEL);
 
+   while (list1->size > 0 && list2->size > 0) {
+    Node *n1 = list1->head->next; // first node in list1
+    Node *n2 = list2->head->next; // first node in list2
+    Node *take; // node to be taken from list1 or list2 and put into merged list
+
+    if (cmp(n1->data, n2->data) > 0) { // n1 is greater 
+      take = n1;
+      take->prev->next = take->next;
+      take->next->prev = take->prev;
+      list1->size--;
+    } else { // n2 is greater or equal 
+      take = n2;
+      take->prev->next = take->next;
+      take->next->prev = take->prev;
+      list2->size--;
+    }
+
+    // append take to merged list 
+    take->next = merged->head;
+    take->prev = merged->head->prev;
+    merged->head->prev->next = take;
+    merged->head->prev = take;
+    merged->size++;
+  }
+
+  while (list1->size > 0) {
+    Node *take = list1->head->next;
+    take->prev->next = take->next;
+    take->next->prev = take->prev;
+    list1->size--;
+
+    take->next = merged->head;
+    take->prev = merged->head->prev;
+    merged->head->prev->next = take;
+    merged->head->prev = take;
+    merged->size++;
+  }
+
+  // move remaining nodes from list2
+  while (list2->size > 0) {
+    Node *take = list2->head->next;
+    take->prev->next = take->next;
+    take->next->prev = take->prev;
+    list2->size--;
+
+    take->next = merged->head;
+    take->prev = merged->head->prev;
+    merged->head->prev->next = take;
+    merged->head->prev = take;
+    merged->size++;
+  }
+
+  return merged;
 }
 
 int compare_int(void *a, void *b) {
@@ -218,11 +279,22 @@ int compare_int(void *a, void *b) {
 }
 
 int compare_str(void *a, void *b) {
-  return strcmp(a, b); 
+  return strcmp(b, a); 
 }
 
 bool is_sorted(List* list, Compare cmp) {
+  if (!list || list->size < 2) {
+    return true; 
+  }
 
+  Node *curr = list->head->next; 
+  while (curr->next != list->head) {
+    if (cmp(curr->data, curr->next->data) < 0) {
+      return false; 
+    }
+    curr = curr->next; 
+  }
+  return true;
 }
 
 
