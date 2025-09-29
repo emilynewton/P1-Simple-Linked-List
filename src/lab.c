@@ -239,11 +239,13 @@ List* merge(List *list1, List *list2, Compare cmp) {
       list_append(merged, n1->data);
       n1->prev->next = n1->next;
       n1->next->prev = n1->prev;
+      free(n1);
       list1->size--;
     } else { // n2 is greater or equal
       list_append(merged, n2->data);
       n2->prev->next = n2->next;
       n2->next->prev = n2->prev;
+      free(n2);
       list2->size--;
     }
   }
@@ -253,6 +255,7 @@ List* merge(List *list1, List *list2, Compare cmp) {
     list_append(merged, node->data);
     node->prev->next = node->next;
     node->next->prev = node->prev;
+    free(node);
     list1->size--;
   }
 
@@ -262,6 +265,7 @@ List* merge(List *list1, List *list2, Compare cmp) {
     list_append(merged, node->data);
     node->prev->next = node->next;
     node->next->prev = node->prev;
+    free(node);
     list2->size--;
   }
 
