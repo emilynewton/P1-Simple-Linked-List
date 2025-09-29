@@ -188,100 +188,145 @@ bool list_is_empty(const List *list) {
   return list->size == 0;
 }
 
+/**
+ * Sorts the circular linked list in descending order using insertion sort.
+ * AI Use: Assisted by AI
+ */
 void sort(List *list, size_t start, size_t end, Compare cmp) {
-    // starting in second position, assuming first is sorted 
-    for (size_t i = start + 1; i < end; ++i) {
-        // current element being sorted 
-        void *key = list_get(list, i);
-        size_t j = i;
+  if(!list || start >= end || end > list->size || !cmp) {
+    return;
+  }
 
-        while (j > start && cmp(list_get(list, j - 1), key) < 0) {
-            Node *curr = list->head->next;
-            for (size_t k = 0; k < j; ++k) {
-                curr = curr->next;
-            }
-            Node *prev = list->head->next; 
-            for (size_t k = 0; k < j - 1; ++k) {
-                prev = prev->next;
-            }
-            curr->data = prev->data;
-            j--;
-        }
-        // place key in correct position 
-        Node *val = list->head->next;
-        for (size_t k = 0; k < j; ++k) {
-            val = val->next;
-        }
-        val->data = key;
-    }
+  // starting in second position, assuming first is sorted 
+  for (size_t i = start + 1; i < end; ++i) {
+      // current element being sorted 
+      void *key = list_get(list, i);
+      size_t j = i;
+
+      while (j > start && cmp(list_get(list, j - 1), key) < 0) {
+          Node *curr = list->head->next;
+          for (size_t k = 0; k < j; ++k) {
+              curr = curr->next;
+          }
+          Node *prev = list->head->next; 
+          for (size_t k = 0; k < j - 1; ++k) {
+              prev = prev->next;
+          }
+          curr->data = prev->data;
+          j--;
+      }
+      // place key in correct position 
+      Node *val = list->head->next;
+      for (size_t k = 0; k < j; ++k) {
+          val = val->next;
+      }
+      val->data = key;
+  }
 }
 
+/**
+ * Merges two sorted circular linked lists into a new sorted circular linked list.
+ * AI Use: Assisted by AI
+ */
 List* merge(List *list1, List *list2, Compare cmp) {
   List *merged = list_create(LIST_LINKED_SENTINEL);
 
    while (list1->size > 0 && list2->size > 0) {
     Node *n1 = list1->head->next; // first node in list1
     Node *n2 = list2->head->next; // first node in list2
-    Node *take; // node to be taken from list1 or list2 and put into merged list
 
-    if (cmp(n1->data, n2->data) > 0) { // n1 is greater 
-      take = n1;
-      take->prev->next = take->next;
-      take->next->prev = take->prev;
+    if (cmp(n1->data, n2->data) > 0) { // n1 is greater
+      list_append(merged, n1->data);
+      n1->prev->next = n1->next;
+      n1->next->prev = n1->prev;
       list1->size--;
-    } else { // n2 is greater or equal 
-      take = n2;
-      take->prev->next = take->next;
-      take->next->prev = take->prev;
+    } else { // n2 is greater or equal
+      list_append(merged, n2->data);
+      n2->prev->next = n2->next;
+      n2->next->prev = n2->prev;
       list2->size--;
     }
-
-    // append take to merged list 
-    take->next = merged->head;
-    take->prev = merged->head->prev;
-    merged->head->prev->next = take;
-    merged->head->prev = take;
-    merged->size++;
   }
 
   while (list1->size > 0) {
-    Node *take = list1->head->next;
-    take->prev->next = take->next;
-    take->next->prev = take->prev;
+    Node *node = list1->head->next;
+    list_append(merged, node->data);
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
     list1->size--;
-
-    take->next = merged->head;
-    take->prev = merged->head->prev;
-    merged->head->prev->next = take;
-    merged->head->prev = take;
-    merged->size++;
   }
 
   // move remaining nodes from list2
   while (list2->size > 0) {
-    Node *take = list2->head->next;
-    take->prev->next = take->next;
-    take->next->prev = take->prev;
+    Node *node = list2->head->next;
+    list_append(merged, node->data);
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
     list2->size--;
-
-    take->next = merged->head;
-    take->prev = merged->head->prev;
-    merged->head->prev->next = take;
-    merged->head->prev = take;
-    merged->size++;
   }
 
   return merged;
 }
 
+/**
+ * Splits the circular linked list into two lists at the specified index.
+ * AI Use: Assisted by AI
+ */
+List* split(List *list, size_t index) {
+  if (!list || index >= list->size) {
+    return NULL; 
+  }
+
+  List *newList = list_create(LIST_LINKED_SENTINEL);
+  if (!newList) { // GCOVR_EXCL_START
+    return NULL; 
+  } // GCOVR_EXCL_STOP
+
+  Node *curr = list->head->next; 
+  for (size_t i = 0; i < index; i++) {
+    curr = curr->next; 
+  }
+
+  // re-link the original list to exclude the split portion
+  Node* prev = list->head->prev;
+  list->head->prev = curr->prev;
+  list->head->prev->next = list->head; 
+  //curr->prev->next = list->head; 
+
+
+  // set up the new list
+  newList->head->next = curr; 
+  newList->head->prev = prev; 
+  curr->prev = newList->head; 
+  prev->next = newList->head;
+
+  // update sizes
+  newList->size = list->size - index; 
+  list->size = index; 
+
+  return newList; 
+}
+
+/**
+ * Compares two integers.
+ * AI Use: No AI
+ */
 int compare_int(void *a, void *b) {
   return (*(int*)a - *(int*)b);
 }
 
+/**
+ * Compares two strings lexicographically.
+ * AI Use: No AI
+ */
 int compare_str(void *a, void *b) {
   return strcmp(b, a); 
 }
 
+/**
+ * Checks if the circular linked list is sorted in descending order.
+ * AI Use: No AI
+ */
 bool is_sorted(List* list, Compare cmp) {
   if (!list || list->size < 2) {
     return true; 
@@ -295,6 +340,39 @@ bool is_sorted(List* list, Compare cmp) {
     curr = curr->next; 
   }
   return true;
+}
+
+
+/**
+ * Generates a random string of lowercase letters.
+ * AI Use: Assisted by AI
+ */
+char *generate_random_string() {
+    int length = rand() % 11 + 5; // random length between 5 and 15. 
+    char *str = malloc((size_t)(length + 1));
+    for (int i = 0; i < length; i++) {
+        str[i] = (char)('a' + rand() % 26); // random lowercase letter
+    }
+    str[length] = '\0';
+    return str;
+}
+
+/**
+ * Generates a list of random integers or strings based on the specified data type and length.
+ * AI Use: Assisted by AI
+ */
+void generate_list(List *list, const char *data_type, size_t length) {
+    for (size_t i = 0; i < length; ++i) {
+        void *data_ptr; 
+        if (strcmp(data_type, "int") == 0) {
+            int *data = (int *)malloc(sizeof(int));
+            *data = rand() % 100; // random integer between 0 and 99
+            data_ptr = data;
+        } else {
+            data_ptr = generate_random_string();
+        }
+        list_append(list, data_ptr);
+    }
 }
 
 

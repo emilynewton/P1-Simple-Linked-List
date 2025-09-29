@@ -74,7 +74,7 @@ bool list_insert(List *list, size_t index, void *data);
 void *list_remove(List *list, size_t index);
 
 /**
- * @brief Get a pointer the element at a specific index.
+ * @brief Get a pointer to the element at a specific index.
  * @param list Pointer to the list.
  * @param index Index of the element to retrieve.
  * @return Pointer to the element, or NULL if index is out of bounds.
@@ -113,6 +113,14 @@ void sort(List *list, size_t start, size_t end, Compare cmp);
 List* merge(List *list1, List *list2, Compare cmp);
 
 /**
+ * @brief Splits a list into two at the specified index.
+ * @param list Pointer to the original list.
+ * @param index Index at which to split the list.
+ * @return Pointer to the new list containing elements from index to end, or NULL on failure.
+ */
+List* split(List *list, size_t index);
+
+/**
  * @brief Sorts integers in descending order.
  * @param a Integer to be compared. 
  * @param b Integer to be compared. 
@@ -131,5 +139,19 @@ int compare_str(void *a, void *b);
  * @return true is the list is sorted, false otherwise. 
  */
 bool is_sorted(List* list, Compare cmp); 
+
+/**
+ * @brief Generates a random string of length between 5 and 15 characters.
+ * @return Pointer to the newly allocated string. Caller is responsible for freeing it.
+ */
+char *generate_random_string();
+
+/**
+ * @brief Generates a list of random integers or strings based on the specified data type and length.
+ * @param list Pointer to the list to populate.
+ * @param data_type "int" for integers, "string" for strings.
+ * @param length Number of elements to generate.
+ */
+void generate_list(List *list, const char *data_type, size_t length);
 
 #endif // LAB_H

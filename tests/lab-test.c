@@ -266,6 +266,253 @@ void test_is_sorted_descending_int(void) {
   list_destroy(list, free);
 }
 
+void test_split(void) {
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  int* a = malloc(sizeof(int)); *a = 10;
+  int* b = malloc(sizeof(int)); *b = 20;
+  int* c = malloc(sizeof(int)); *c = 30;
+  int* d = malloc(sizeof(int)); *d = 40;
+  list_append(list, a);
+  list_append(list, b);
+  list_append(list, c);
+  list_append(list, d);
+
+  List* newList = split(list, 2);
+  TEST_ASSERT_NOT_NULL(newList);
+  TEST_ASSERT_EQUAL(2, list_size(list));
+  TEST_ASSERT_EQUAL(2, list_size(newList));
+  TEST_ASSERT_EQUAL_PTR(a, list_get(list, 0));
+  TEST_ASSERT_EQUAL_PTR(b, list_get(list, 1));
+  TEST_ASSERT_EQUAL_PTR(c, list_get(newList, 0));
+  TEST_ASSERT_EQUAL_PTR(d, list_get(newList, 1));
+
+  list_destroy(list, free);
+  list_destroy(newList, free);
+}
+
+void test_split_sort_merge(void) {
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  int* a = malloc(sizeof(int)); *a = 30;
+  int* b = malloc(sizeof(int)); *b = 10;
+  int* c = malloc(sizeof(int)); *c = 40;
+  int* d = malloc(sizeof(int)); *d = 20;
+  list_append(list, a);
+  list_append(list, b);
+  list_append(list, c);
+  list_append(list, d);
+
+  List* newList = split(list, 2);
+  TEST_ASSERT_NOT_NULL(newList);
+
+  sort(list, 0, list_size(list), compare_int);
+  sort(newList, 0, list_size(newList), compare_int);
+
+  List* merged = merge(list, newList, compare_int);
+  TEST_ASSERT_NOT_NULL(merged);
+  TEST_ASSERT_EQUAL(4, list_size(merged));
+  TEST_ASSERT_TRUE(is_sorted(merged, compare_int));
+
+  list_destroy(list, free);
+  list_destroy(newList, free);
+  list_destroy(merged, free);
+}
+
+void test_sort_guard_conditions(void) {
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  int *x = malloc(sizeof(int)); *x = 1;
+  TEST_ASSERT_TRUE(list_append(list, x));
+
+  size_t before = list_size(list);
+
+  /* should return immediately (no crash / no modification) */
+  sort(NULL, 0, 1, compare_int);               // !list
+  sort(list, 1, 1, compare_int);               // start >= end
+  sort(list, 0, before + 1, compare_int);      // end > list->size
+  sort(list, 0, before, NULL);                 // !cmp
+
+  /* verify list unchanged */
+  TEST_ASSERT_EQUAL(before, list_size(list));
+  int *val = (int *)list_get(list, 0);
+  TEST_ASSERT_NOT_NULL(val);
+  TEST_ASSERT_EQUAL(1, *val);
+
+  list_destroy(list, free);
+}
+
+void test_split_guard_conditions(void) {
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  int *a = malloc(sizeof(int)); *a = 1;
+  int *b = malloc(sizeof(int)); *b = 2;
+  TEST_ASSERT_TRUE(list_append(list, a));
+  TEST_ASSERT_TRUE(list_append(list, b));
+
+  // NULL list should return NULL
+  TEST_ASSERT_NULL(split(NULL, 0));
+
+  // index == size (out of range) should return NULL
+  TEST_ASSERT_NULL(split(list, list_size(list)));
+
+  // index > size should return NULL
+  TEST_ASSERT_NULL(split(list, list_size(list) + 1));
+
+  // valid split for control: index within range should return a new list
+  List *newList = split(list, 1);
+  TEST_ASSERT_NOT_NULL(newList);
+  TEST_ASSERT_EQUAL(1, list_size(list));
+  TEST_ASSERT_EQUAL(1, list_size(newList));
+
+  list_destroy(list, free);
+  list_destroy(newList, free);
+}
+
+void test_split_internal_middle(void) {
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  int *a = malloc(sizeof(int)); *a = 1;
+  int *b = malloc(sizeof(int)); *b = 2;
+  int *c = malloc(sizeof(int)); *c = 3;
+  int *d = malloc(sizeof(int)); *d = 4;
+
+  list_append(list, a);
+  list_append(list, b);
+  list_append(list, c);
+  list_append(list, d);
+
+  /* split in the middle: index 2 -> newList gets elements 2..end (0-based) */
+  List *newList = split(list, 2);
+  TEST_ASSERT_NOT_NULL(newList);
+
+  /* original should have first two elements */
+  TEST_ASSERT_EQUAL(2, list_size(list));
+  int *v0 = list_get(list, 0); TEST_ASSERT_NOT_NULL(v0); TEST_ASSERT_EQUAL(1, *v0);
+  int *v1 = list_get(list, 1); TEST_ASSERT_NOT_NULL(v1); TEST_ASSERT_EQUAL(2, *v1);
+
+  /* newList should have remaining elements in order */
+  TEST_ASSERT_EQUAL(2, list_size(newList));
+  int *n0 = list_get(newList, 0); TEST_ASSERT_NOT_NULL(n0); TEST_ASSERT_EQUAL(3, *n0);
+  int *n1 = list_get(newList, 1); TEST_ASSERT_NOT_NULL(n1); TEST_ASSERT_EQUAL(4, *n1);
+
+  list_destroy(list, free);
+  list_destroy(newList, free);
+}
+
+void test_split_index_zero_moves_all_nodes(void) {
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  int *a = malloc(sizeof(int)); *a = 5;
+  int *b = malloc(sizeof(int)); *b = 6;
+  int *c = malloc(sizeof(int)); *c = 7;
+
+  list_append(list, a);
+  list_append(list, b);
+  list_append(list, c);
+
+  /* split at 0 should move all nodes to the new list, leaving original empty */
+  List *newList = split(list, 0);
+  TEST_ASSERT_NOT_NULL(newList);
+
+  TEST_ASSERT_EQUAL(0, list_size(list));
+  TEST_ASSERT_TRUE(list_is_empty(list));
+
+  TEST_ASSERT_EQUAL(3, list_size(newList));
+  int *n0 = list_get(newList, 0); TEST_ASSERT_NOT_NULL(n0); TEST_ASSERT_EQUAL(5, *n0);
+  int *n1 = list_get(newList, 1); TEST_ASSERT_NOT_NULL(n1); TEST_ASSERT_EQUAL(6, *n1);
+  int *n2 = list_get(newList, 2); TEST_ASSERT_NOT_NULL(n2); TEST_ASSERT_EQUAL(7, *n2);
+
+  list_destroy(list, free);
+  list_destroy(newList, free);
+}
+
+void test_is_sorted_guard_conditions(void) {
+  /* NULL list -> should return true (guard) */
+  TEST_ASSERT_TRUE(is_sorted(NULL, compare_int));
+
+  /* empty list -> should return true */
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  TEST_ASSERT_NOT_NULL(list);
+  TEST_ASSERT_TRUE(is_sorted(list, compare_int));
+
+  /* single-element list -> should return true */
+  int *v = malloc(sizeof(int)); *v = 42;
+  TEST_ASSERT_TRUE(list_append(list, v));
+  TEST_ASSERT_EQUAL(1, list_size(list));
+  TEST_ASSERT_TRUE(is_sorted(list, compare_int));
+
+  list_destroy(list, free);
+}
+
+void test_is_sorted_detects_unsorted_pair(void) {
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  int *a = malloc(sizeof(int)); *a = 8;
+  int *b = malloc(sizeof(int)); *b = 10;
+
+  TEST_ASSERT_TRUE(list_append(list, a));
+  TEST_ASSERT_TRUE(list_append(list, b));
+
+  /* cmp(a,b) = 8 - 10 = -2 < 0 -> should trigger the branch and return false */
+  TEST_ASSERT_FALSE(is_sorted(list, compare_int));
+
+  list_destroy(list, free);
+}
+
+void test_generate_random_string_chars_and_length(void) {
+  for (int iter = 0; iter < 50; ++iter) {
+    char *s = generate_random_string();
+    TEST_ASSERT_NOT_NULL(s);
+
+    size_t len = strlen(s);
+    TEST_ASSERT_TRUE(len >= 5 && len <= 15);
+
+    for (size_t i = 0; i < len; ++i) {
+      TEST_ASSERT_TRUE(s[i] >= 'a' && s[i] <= 'z');
+    }
+    TEST_ASSERT_EQUAL_CHAR('\0', s[len]);
+
+    free(s);
+  }
+}
+
+void test_generate_list_ints(void) {
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  TEST_ASSERT_NOT_NULL(list);
+
+  /* generate 10 integer entries */
+  generate_list(list, "int", 10);
+  TEST_ASSERT_EQUAL(10, list_size(list));
+
+  for (size_t i = 0; i < list_size(list); ++i) {
+    int *v = (int *)list_get(list, i);
+    TEST_ASSERT_NOT_NULL(v);
+    /* basic sanity: dereference must be a valid int (no further range assumptions) */
+    (void)*v;
+  }
+
+  list_destroy(list, free);
+}
+
+void test_generate_list_uses_random_string(void) {
+  List *list = list_create(LIST_LINKED_SENTINEL);
+  TEST_ASSERT_NOT_NULL(list);
+
+  /* generate 8 random strings (non-"int" branch) */
+  generate_list(list, "str", 8);
+  TEST_ASSERT_EQUAL(8, list_size(list));
+
+  for (size_t i = 0; i < list_size(list); ++i) {
+    char *s = (char *)list_get(list, i);
+    TEST_ASSERT_NOT_NULL(s);
+
+    size_t len = strlen(s);
+    TEST_ASSERT_TRUE(len >= 5 && len <= 15);
+
+    for (size_t j = 0; j < len; ++j) {
+      TEST_ASSERT_TRUE(s[j] >= 'a' && s[j] <= 'z');
+    }
+  }
+
+  list_destroy(list, free);
+}
+
+
+
 int main(void) {
   UNITY_BEGIN();
   RUN_TEST(test_list_create);
@@ -285,5 +532,16 @@ int main(void) {
   RUN_TEST(test_merge_int);
   RUN_TEST(test_merge_str);
   RUN_TEST(test_is_sorted_descending_int);
+  RUN_TEST(test_split);
+  RUN_TEST(test_split_sort_merge);
+  RUN_TEST(test_sort_guard_conditions);
+  RUN_TEST(test_split_guard_conditions);
+  RUN_TEST(test_split_internal_middle);
+  RUN_TEST(test_split_index_zero_moves_all_nodes);
+  RUN_TEST(test_is_sorted_guard_conditions);
+  RUN_TEST(test_is_sorted_detects_unsorted_pair);
+  RUN_TEST(test_generate_random_string_chars_and_length);
+  RUN_TEST(test_generate_list_ints);
+  RUN_TEST(test_generate_list_uses_random_string);
   return UNITY_END();
 }
